@@ -4,14 +4,12 @@ include_once("./layout/header.php");
 
 if (isset($_GET['delete_category'])) {
     $category_id = $_GET['delete_category'];
-    $sql = "DELETE FROM categories WHERE category_id='$category_id'";
 
-    if ($conn->query($sql) === TRUE) {
-        setFlashSuccess("Category deleted successfully!");
-        redirect("category_management.php");
-    } else {
-        echo "Error: " . $sql . "<br>" . $conn->error;
-    }
+    $conn->query("DELETE FROM product_categories WHERE category_id='$category_id'");
+    $conn->query("DELETE FROM categories WHERE category_id='$category_id'");
+
+    setFlashSuccess("Category deleted successfully!");
+    redirect("category_management.php");
 }
 $categories = fetchRowsFromTable("categories");
 ?>
@@ -28,13 +26,11 @@ $categories = fetchRowsFromTable("categories");
     </div>
 
 
-    <!-- Display Existing Categories -->
     <div class="card mt-4">
         <div class="card-header">
             Categories List
         </div>
         <div class="card-body">
-            <!-- Display a table with existing categories -->
             <table class="table table-bordered">
                 <thead>
                     <tr>

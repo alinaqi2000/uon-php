@@ -25,43 +25,91 @@ function redirect($url)
     header("Location: " . $url);
     exit();
 }
-function fetchRowsFromTable($table, $columns = "*", $condition = "", $params = array())
+function getAllProducts($limit = -1)
+{
+    return fetchRaw("SELECT * FROM products " . ($limit == -1 ? "" : "LIMIT 0, " . $limit));
+}
+function getCategoryProducts($category_id)
+{
+    return fetchRaw("SELECT p.* FROM product_categories as pc
+    JOIN products as p ON p.product_id = pc.product_id
+    WHERE pc.category_id = $category_id
+    GROUP BY p.product_id ");
+}
+function getFeaturedProducts($limit = -1)
+{
+    return fetchRaw("SELECT * FROM products WHERE featured=1 " . ($limit == -1 ? "" : "LIMIT 0, " . $limit));
+}
+function getProductQuestions($product_id)
+{
+    return fetchRaw("SELECT COALESCE(q.question_id, a.question_id) as q_id, q.*, a.*, c.*, u.*
+    FROM questions AS q
+    LEFT JOIN answers AS a ON q.question_id = a.question_id
+    LEFT JOIN customers AS c ON q.customer_id = c.customer_id
+    LEFT JOIN users AS u ON a.user_id = u.user_id
+    WHERE q.product_id = $product_id");
+}
+function getCategories()
+{
+    return fetchRowsFromTable("categories");
+}
+function addProductCategories($product_id, $categories)
 {
     global $conn;
+    $conn->query("DELETE FROM product_categories WHERE product_id='$product_id'");
 
-    $allowed_tables = array("products", "categories", "product_categories", "users", "questions");
-    if (!in_array($table, $allowed_tables)) {
-        return false;
+    foreach ($categories as $category_id) {
+        $conn->query("INSERT INTO product_categories (product_id, category_id) VALUES ('$product_id', '$category_id')");
     }
+}
 
-    // Construct the SQL query
-    $sql = "SELECT $columns FROM $table";
+function fetchRaw($sql)
+{
+    try {
+        global $conn;
+        $stmt = $conn->prepare($sql);
+        $stmt->execute();
 
-    // Add condition if provided
-    if (!empty($condition)) {
-        $sql .= " WHERE $condition";
+        $result = $stmt->get_result();
+        $rows = $result->fetch_all(MYSQLI_ASSOC);
+
+        $stmt->close();
+
+        return $rows;
+    } catch (\Throwable $th) {
+        die($th->getMessage());
     }
+}
+function fetchRowsFromTable($table, $columns = "*", $condition = "", $params = array())
+{
+    try {
+        global $conn;
 
-    // Prepare the SQL statement
-    $stmt = $conn->prepare($sql);
+        $allowed_tables = array("products", "categories", "product_categories", "users", "customers", "questions", "answers");
 
-    // Bind parameters if provided
-    if (!empty($params)) {
-        $types = str_repeat('s', count($params)); // Assume all parameters are strings, adjust as needed
-        $stmt->bind_param($types, ...$params);
+        if (!in_array($table, $allowed_tables)) {
+            return false;
+        }
+        $sql = "SELECT $columns FROM $table";
+
+        if (!empty($condition)) {
+            $sql .= " WHERE $condition";
+        }
+
+        $stmt = $conn->prepare($sql);
+
+        if (!empty($params)) {
+            $types = str_repeat('s', count($params));
+            $stmt->bind_param($types, ...$params);
+        }
+
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $rows = $result->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+
+        return $rows;
+    } catch (\Throwable $th) {
+        die($th->getMessage());
     }
-
-    // Execute the SQL statement
-    $stmt->execute();
-
-    // Get the result set
-    $result = $stmt->get_result();
-
-    // Fetch rows as an associative array
-    $rows = $result->fetch_all(MYSQLI_ASSOC);
-
-    // Close the statement
-    $stmt->close();
-
-    return $rows;
 }

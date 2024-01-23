@@ -4,14 +4,12 @@ include_once("./layout/header.php");
 
 if (isset($_GET['delete_product'])) {
     $product_id = $_GET['delete_product'];
-    $sql = "DELETE FROM products WHERE id='$product_id'";
 
-    if ($conn->query($sql) === TRUE) {
-        setFlashSuccess("Product added successfully!");
-        redirect("product_management.php");
-    } else {
-        echo "Error: " . $sql . "<br>" . $conn->error;
-    }
+    $conn->query("DELETE FROM product_categories WHERE product_id='$product_id'");
+    $conn->query("DELETE FROM products WHERE product_id='$product_id'");
+
+    setFlashSuccess("Product deleted successfully!");
+    redirect("product_management.php");
 }
 $products = fetchRowsFromTable("products");
 ?>
@@ -27,13 +25,11 @@ $products = fetchRowsFromTable("products");
         </div>
     </div>
 
-    <!-- Display Existing Products -->
     <div class="card mt-4">
         <div class="card-header">
-            Existing Products
+            Products List
         </div>
         <div class="card-body">
-            <!-- Display a table with existing products -->
             <table class="table table-bordered">
                 <thead>
                     <tr>
@@ -53,7 +49,7 @@ $products = fetchRowsFromTable("products");
                     <?php endif; ?>
                     <?php foreach ($products as $product) : ?>
                         <tr>
-                            <td><?php echo $product['id']; ?></td>
+                            <td><?php echo $product['product_id']; ?></td>
                             <td><?php echo $product['name']; ?></td>
                             <td><?php echo $product['description']; ?></td>
                             <td><?php echo $product['manufacturer']; ?></td>

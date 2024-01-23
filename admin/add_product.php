@@ -4,57 +4,55 @@ $title = empty($product_id) ? 'Add Product' : 'Update Product';
 include_once("./layout/header.php");
 
 
-$product_name = $product_description = $product_manufacturer = $product_price = $product_category = '';
-
+$product_name = $product_description = $product_manufacturer = $product_price  = '';
+$product_category = [];
 if (isset($_GET['edit_product'])) {
-    // Fetch existing product details from the database
-    // Example: Implement your logic to fetch product details based on $product_id
     $sql = "SELECT * FROM products WHERE product_id='$product_id' LIMIT 1";
     $result = $conn->query($sql);
 
     if ($result->num_rows == 1) {
         $product = $result->fetch_assoc();
 
-        // Set form variables with existing product details
         $product_name = $product['name'];
         $product_description = $product['description'];
+        $product_detail = $product['detail'];
+        $product_featured = $product['featured'];
         $product_manufacturer = $product['manufacturer'];
         $product_price = $product['price'];
-        $product_category = $product['category_id'];
+        $cats = fetchRowsFromTable("product_categories", "category_id", "product_id=?", [$product_id]);
+        $product_category = array_column($cats, "category_id");
     }
 }
 
-// Handle form submissions for adding/editing products
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Fetch form data
+
     $product_name = $_POST['product_name'];
     $product_description = $_POST['product_description'];
+    $product_detail = $_POST['product_detail'];
+    $product_featured = $_POST['product_featured'];
     $product_manufacturer = $_POST['product_manufacturer'];
     $product_price = $_POST['product_price'];
-    $product_category = $_POST['product_category'];
-
-    // Check if the form is in "Add Product" mode
-    if (empty($_POST['product_id'])) {
-        // Add Product Logic
-        $sql = "INSERT INTO products (name, description, manufacturer, price, category_id) VALUES ('$product_name', '$product_description', '$product_manufacturer', '$product_price', '$product_category')";
+    $product_categories = $_POST['product_category'];
+    if ($product_id == "") {
+        $sql = "INSERT INTO products (name, description, detail, featured, manufacturer, price) VALUES ('$product_name', '$product_description', '$product_detail', '$product_featured', '$product_manufacturer', '$product_price')";
 
         if ($conn->query($sql) === TRUE) {
+            addProductCategories($conn->insert_id, $product_categories);
+
             setFlashSuccess("Product added successfully!");
             redirect("product_management.php");
         } else {
-            // Error handling
             echo "Error: " . $sql . "<br>" . $conn->error;
         }
     } else {
-        // Update Product Logic
-        $product_id = $_POST['product_id'];
-        $sql = "UPDATE products SET name='$product_name', description='$product_description', manufacturer='$product_manufacturer', price='$product_price', category_id='$product_category' WHERE id='$product_id'";
+        $sql = "UPDATE products SET name='$product_name', description='$product_description', detail='$product_detail', featured='$product_featured', manufacturer='$product_manufacturer', price='$product_price' WHERE product_id='$product_id'";
 
         if ($conn->query($sql) === TRUE) {
+            addProductCategories($product_id, $product_categories);
+
             setFlashSuccess("Product updated successfully!");
             redirect("product_management.php");
         } else {
-            // Error handling
             echo "Error: " . $sql . "<br>" . $conn->error;
         }
     }
@@ -65,7 +63,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <?php echo $title ?>
     </h2>
 
-    <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
+    <form method="post" action="">
         <input type="hidden" name="product_id" value="<?php echo $product_id; ?>">
 
         <div class="form-group">
@@ -77,6 +75,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <label for="product_description">Product Description:</label>
             <textarea class="form-control" id="product_description" name="product_description" rows="4"><?php echo $product_description; ?></textarea>
         </div>
+        <div class="form-group">
+            <label for="product_description">Product Detail:</label>
+            <textarea class="form-control" id="product_detail" name="product_detail" rows="4"><?php echo $product_detail; ?></textarea>
+        </div>
 
         <div class="form-group">
             <label for="product_manufacturer">Manufacturer:</label>
@@ -85,24 +87,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         <div class="form-group">
             <label for="product_price">Price:</label>
-            <input type="number" class="form-control" id="product_price" name="product_price" value="<?php echo $product_price; ?>" required>
+            <input type="number" class="form-control" id="product_price" name="product_price" step=".01" value="<?php echo $product_price; ?>" required>
         </div>
 
         <div class="form-group">
             <label for="product_category">Category:</label>
-            <select class="form-control" id="product_category" name="product_category" required>
-                <!-- Populate the dropdown with categories from your database -->
+            <select class="form-control" multiple id="product_category" name="product_category[]" required>
                 <?php
-                // Example: Fetch categories from the database
-                $categories = array(); // Replace with actual data from the database
+                $categories = getCategories();
 
                 foreach ($categories as $category) {
-                    $selected = ($category['id'] == $product_category) ? 'selected' : '';
-                    echo "<option value='{$category['id']}' $selected>{$category['name']}</option>";
+                    $selected = in_array($category['category_id'], $product_category) ? 'selected' : '';
+                    echo "<option value='{$category['category_id']}' $selected>{$category['category_name']}</option>";
                 }
                 ?>
             </select>
         </div>
+        <div class="form-group">
+            <label for="product_featured">Featured:</label>
+            <div>
+                <input type="radio" id="featured_yes" name="product_featured" value="1" <?php echo $product_featured == 1 ? "checked" : ""; ?>>
+                <label for="featured_yes">Yes</label>
+                &nbsp; &nbsp; &nbsp;
+                <input type="radio" id="featured_no" name="product_featured" value="0" <?php echo $product_featured == 0 ? "checked" : ""; ?>>
+                <label for="featured_no">No</label>
+            </div>
+        </div>
+
 
         <button type="submit" class="btn btn-primary" name="<?php echo empty($product_id) ? 'add_product' : 'update_product'; ?>">
             <?php echo empty($product_id) ? 'Add Product' : 'Update Product'; ?>

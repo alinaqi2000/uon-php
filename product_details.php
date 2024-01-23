@@ -1,50 +1,100 @@
 <?php
-// Include db_connection.php and necessary functions
-
-if (isset($_GET['id'])) {
-    $productId = $_GET['id'];
-
-    // Fetch product details from the database
-    $productSql = "SELECT * FROM products WHERE product_id = $productId";
-    $productResult = $conn->query($productSql);
-
-    if ($productResult->num_rows > 0) {
-        $product = $productResult->fetch_assoc();
-
-        // Fetch questions and answers for the product
-        $qaSql = "SELECT * FROM questions JOIN answers ON questions.question_id = answers.question_id WHERE questions.product_id = $productId";
-        $qaResult = $conn->query($qaSql);
-
-        echo '<h2>' . $product['name'] . '</h2>';
-        echo '<h4>Product details</h4>';
-        echo '<p>' . $product['description'] . '</p>';
-        echo '<div class="price">£' . $product['price'] . '</div>';
-
-        echo '<h4>Product Q&A</h4>';
-        echo '<ul class="qa-list">';
-        while ($qa = $qaResult->fetch_assoc()) {
-            echo '<li>';
-            echo '<p>' . $qa['question'] . '</p>';
-            echo '<p>' . $qa['answer'] . '</p>';
-            echo '<div class="details">';
-            echo '<strong>' . $qa['user_id'] . '</strong>';
-            echo '<em>' . $qa['date_time'] . '</em>';
-            echo '</div>';
-            echo '</li>';
-        }
-        echo '</ul>';
-
-        // Form to ask a question (Assuming user authentication is implemented)
-        echo '<h4>Ask a Question</h4>';
-        echo '<form action="ask_question.php" method="post">';
-        echo '<input type="hidden" name="product_id" value="' . $productId . '" />';
-        echo '<label>Your Question</label> <textarea name="question" required></textarea>';
-        echo '<input type="submit" name="submit" value="Ask Question" />';
-        echo '</form>';
-    } else {
-        echo "Product not found.";
-    }
-} else {
-    echo "Invalid request.";
+include_once("./includes/includes.php");
+$product_id = $_GET['product'];
+$products = fetchRowsFromTable("products", "*", "product_id=?", [$product_id]);
+if (!$products[0]) {
+    redirect("index.php");
 }
+
+$product = $products[0];
+$title = $product['name'] . " - " . $product['description'];
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
+    $name = $_POST['name'];
+    $email = $_POST['email'];
+    $question = $_POST['question'];
+    if (!$name || !$email || !$question) {
+        setFlashError("Please fill in all the required fields");
+    } else {
+        $customer = null;
+        $customers = fetchRowsFromTable("customers", "*", "customer_email=?", [$email]);
+        $customer = $customers[0];
+        $sql = "INSERT INTO customers (customer_name, customer_email) VALUES ('$name', '$email')";
+        if (!$customer && $conn->query($sql) !== TRUE) {
+            setFlashError("Something went wrong! Please try later.");
+        } else {
+            $customer_id = $customer['customer_id'] ?? $conn->insert_id;
+            $sql = "INSERT INTO questions (product_id, customer_id, question) VALUES ('$product_id', '$customer_id', '$question')";
+            if ($conn->query($sql) === TRUE) {
+                setFlashSuccess("Question posted successfully!");
+                $question_id = $conn->insert_id;
+                redirect("product_details.php?product=" . $product_id . "#question-" .  $question_id);
+            } else {
+                setFlashError("Something went wrong! Please try later.");
+            }
+        }
+    }
+}
+
+include_once("./layout/header.php");
 ?>
+<section></section>
+<main>
+    <h3><?= $product['name'] ?></h3>
+    <p><?= $product['description'] ?></p>
+    <p><strong>Manufacturer:</strong> <?= $product['manufacturer'] ?></p>
+    <p><strong>Price:</strong> <?= $product['price'] ?></p>
+    <p>
+        <?= nl2br($product['detail']) ?>
+    </p>
+    <hr />
+    <h2>Want to know more? Ask any question</h2>
+    <?php displayFlashMessages(); ?>
+    <form action="" method="post">
+        <div class="field">
+            <label>Name</label>
+            <input type="text" required name="name" value="<?= $_POST['name'] ?>" />
+        </div>
+        <div class="field">
+            <label>Email</label>
+            <input type="email" required name="email" value="<?= $_POST['email'] ?>" />
+        </div>
+        <div class="field">
+            <label>Your Question</label>
+            <textarea name="question"><?= $_POST['question'] ?></textarea>
+        </div>
+        <input type="submit" required name="submit" value="submit" />
+    </form>
+    <hr />
+    <h4>Product questions</h4>
+    <?php $questions = getProductQuestions($product_id); ?>
+    <?php if (!count($questions)) : ?>
+        <p>No questions asked yet!</p>
+    <?php endif; ?>
+    <ul class="reviews">
+        <?php foreach ($questions as $question) : ?>
+            <li id="question-<?= $question['q_id'] ?>">
+                <p><?= nl2br($question['question']) ?></p>
+                <div class="details">
+                    <strong><?= $question['customer_name'] ?></strong>
+                    <em><?= date("d M Y", strtotime($question['questioned_at'])) ?></em>
+                </div>
+            </li>
+            <?php if ($question['answered']) : ?>
+                <li>
+                    <p><?= nl2br($question['answer']) ?></p>
+                    <div class="details">
+                        <strong><?= $question['full_name'] ?></strong>
+                        <em><?= date("d M Y", strtotime($question['answered_at'])) ?></em>
+                    </div>
+                </li>
+            <?php else : ?>
+                <li>Not answered yet!</li>
+            <?php endif; ?>
+        <?php endforeach; ?>
+
+    </ul>
+</main>
+<?php
+include_once("./layout/footer.php");
