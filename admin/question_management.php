@@ -49,7 +49,7 @@ $questions = getAllQuestions(-1, $onlyUnanswered);
                         <tr>
                             <td><?php echo $question['question_id']; ?></td>
                             <td><?php echo $question['name']; ?></td>
-                            <td><?php echo $question['question']; ?></td>
+                            <td><?php echo subString($question['question']); ?></td>
                             <td><?php echo date("d-m-Y", strtotime($question['questioned_at'])); ?></td>
                             <td><?php echo $question['customer_name']; ?></td>
                             <td><?php echo displayAnsweredBy($question['full_name']); ?></td>

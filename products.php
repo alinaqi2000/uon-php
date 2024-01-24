@@ -1,7 +1,7 @@
 <?php
 include_once("./includes/includes.php");
 $category_id = $_GET['category'];
-$categories = fetchRowsFromTable("categories", "*", "category_id=?", [$category_id]);
+$categories = fetchRowsFromTable("categories", "*", "category_id=:0", [$category_id]);
 if (!$categories[0]) {
     redirect("index.php");
 }

@@ -1,5 +1,11 @@
 <?php
-
+function subString($string, $max = 100)
+{
+    if (strlen($string) > $max) {
+        return substr($string, 0, $max) . "...";
+    }
+    return $string;
+}
 function setFlashError($message)
 {
     $_SESSION['flash_error'] = $message;
@@ -23,8 +29,8 @@ function displayFlashMessages()
 function displayAnsweredBy($name)
 {
     if ($name)
-        return "<span class='badge badge-success p-2'>$name</span>";
-    return "<span class='badge badge-danger p-2'>Not Answered</span>";
+        return "<span class='p-2'>$name</span>";
+    return "<span class='font-weight-bold text-danger p-2'>Not Answered</span>";
 }
 function redirect($url)
 {
@@ -103,20 +109,23 @@ function fetchRaw($sql, $single = false)
 {
     try {
         global $conn;
+
         $stmt = $conn->prepare($sql);
         $stmt->execute();
 
-        $result = $stmt->get_result();
-        if ($single)
-            $rows = $result->fetch_assoc();
-        else
-            $rows = $result->fetch_all(MYSQLI_ASSOC);
+        $result = $stmt->setFetchMode(PDO::FETCH_ASSOC);
 
-        $stmt->close();
+        if ($single) {
+            $row = $stmt->fetch();
+        } else {
+            $rows = $stmt->fetchAll();
+        }
 
-        return $rows;
-    } catch (\Throwable $th) {
-        die($th->getMessage());
+        $stmt->closeCursor();
+
+        return $single ? $row : $rows;
+    } catch (PDOException $e) {
+        die($e->getMessage());
     }
 }
 function fetchRowsFromTable($table, $columns = "*", $condition = "", $params = array())
@@ -129,6 +138,7 @@ function fetchRowsFromTable($table, $columns = "*", $condition = "", $params = a
         if (!in_array($table, $allowed_tables)) {
             return false;
         }
+
         $sql = "SELECT $columns FROM $table";
 
         if (!empty($condition)) {
@@ -138,17 +148,17 @@ function fetchRowsFromTable($table, $columns = "*", $condition = "", $params = a
         $stmt = $conn->prepare($sql);
 
         if (!empty($params)) {
-            $types = str_repeat('s', count($params));
-            $stmt->bind_param($types, ...$params);
+            foreach ($params as $key => $value) {
+                $stmt->bindParam(":$key", $value);
+            }
         }
 
         $stmt->execute();
-        $result = $stmt->get_result();
-        $rows = $result->fetch_all(MYSQLI_ASSOC);
-        $stmt->close();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt->closeCursor();
 
         return $rows;
-    } catch (\Throwable $th) {
-        die($th->getMessage());
+    } catch (PDOException $e) {
+        echo "Connection failed: " . $e->getMessage();
     }
 }

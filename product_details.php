@@ -1,7 +1,7 @@
 <?php
 include_once("./includes/includes.php");
 $product_id = $_GET['product'];
-$products = fetchRowsFromTable("products", "*", "product_id=?", [$product_id]);
+$products = fetchRowsFromTable("products", "*", "product_id=:0", [$product_id]);
 if (!$products[0]) {
     redirect("index.php");
 }
@@ -18,17 +18,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         setFlashError("Please fill in all the required fields");
     } else {
         $customer = null;
-        $customers = fetchRowsFromTable("customers", "*", "customer_email=?", [$email]);
+        $customers = fetchRowsFromTable("customers", "*", "customer_email=:0", [$email]);
         $customer = $customers[0];
         $sql = "INSERT INTO customers (customer_name, customer_email) VALUES ('$name', '$email')";
         if (!$customer && $conn->query($sql) !== TRUE) {
             setFlashError("Something went wrong! Please try later.");
         } else {
-            $customer_id = $customer['customer_id'] ?? $conn->insert_id;
+            $customer_id = $customer['customer_id'] ?? $conn->lastInsertId();
             $sql = "INSERT INTO questions (product_id, customer_id, question) VALUES ('$product_id', '$customer_id', '$question')";
-            if ($conn->query($sql) === TRUE) {
+            if ($conn->query($sql) !== false) {
                 setFlashSuccess("Question posted successfully!");
-                $question_id = $conn->insert_id;
+                $question_id = $conn->lastInsertId();
                 redirect("product_details.php?product=" . $product_id . "#question-" .  $question_id);
             } else {
                 setFlashError("Something went wrong! Please try later.");

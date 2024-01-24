@@ -1,5 +1,4 @@
 -- Drop Existing Tables
-
 DROP TABLE IF EXISTS answers;
 
 DROP TABLE IF EXISTS questions;
@@ -11,7 +10,6 @@ DROP TABLE IF EXISTS products;
 DROP TABLE IF EXISTS categories;
 
 DROP TABLE IF EXISTS customers;
-
 
 DROP TABLE IF EXISTS users;
 
@@ -67,7 +65,7 @@ CREATE TABLE questions (
     question_id INT AUTO_INCREMENT PRIMARY KEY,
     product_id INT,
     customer_id INT,
-    question TEXT,
+    question LONGTEXT,
     answered BOOLEAN DEFAULT FALSE,
     questioned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (product_id) REFERENCES products(product_id),
@@ -78,10 +76,12 @@ CREATE TABLE questions (
 CREATE TABLE answers (
     answer_id INT AUTO_INCREMENT PRIMARY KEY,
     question_id INT,
+    product_id INT,
     user_id INT,
-    answer TEXT,
+    answer LONGTEXT,
     answered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (question_id) REFERENCES questions(question_id),
+    FOREIGN KEY (product_id) REFERENCES products(product_id),
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 
@@ -244,11 +244,13 @@ VALUES
 INSERT INTO
     answers (
         question_id,
+        product_id,
         user_id,
         answer
     )
 VALUES
     (
+        1,
         1,
         2,
         "No, this TV does not support 3D."
@@ -256,20 +258,24 @@ VALUES
     (
         2,
         2,
+        2,
         "The laptop comes with 16GB of RAM."
     ),
     (
+        3,
         3,
         2,
         "Yes, the smartphone is water-resistant with an IP68 rating."
     ),
     (
         4,
+        4,
         2,
         "Yes, the console can be connected to your PC."
     ),
     (
         5,
+        4,
         2,
         "Yes, the console has a built-in Blu-ray player."
     );

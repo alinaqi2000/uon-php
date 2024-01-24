@@ -14,7 +14,7 @@ if (isset($_GET['delete_employee'])) {
     setFlashSuccess("Employee deleted successfully!");
     redirect("employee_management.php");
 }
-$employees = fetchRowsFromTable("users", "*", "user_type=?", ['employee']);
+$employees = fetchRowsFromTable("users", "*", "user_type=:0", ['employee']);
 ?>
 <div class="container mt-4">
     <h2>Employee Management</h2>

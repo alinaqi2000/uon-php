@@ -5,9 +5,15 @@ include_once("./layout/header.php");
 if (isset($_GET['delete_product'])) {
     $product_id = $_GET['delete_product'];
 
+   try {
+    $conn->query("DELETE FROM answers WHERE product_id='$product_id'");
+    $conn->query("DELETE FROM questions WHERE product_id='$product_id'");
     $conn->query("DELETE FROM product_categories WHERE product_id='$product_id'");
     $conn->query("DELETE FROM products WHERE product_id='$product_id'");
 
+   } catch (\Throwable $th) {
+   die($th->getMessage());
+   }
     setFlashSuccess("Product deleted successfully!");
     redirect("product_management.php");
 }

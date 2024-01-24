@@ -10,8 +10,8 @@ if (isset($_GET['edit_employee'])) {
     $sql = "SELECT * FROM users WHERE user_id='$employee_id' LIMIT 1";
     $result = $conn->query($sql);
 
-    if ($result->num_rows == 1) {
-        $employee = $result->fetch_assoc();
+    if ($result->rowCount() == 1) {
+        $employee = $result->fetch();
         $employee_id = $employee['user_id'];
         $employee_name = $employee['full_name'];
         $employee_email = $employee['email'];
@@ -26,14 +26,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $employee_password = password_hash($_POST['employee_password'], PASSWORD_DEFAULT);
 
     if (empty($_POST['employee_id'])) {
-        if (count(fetchRowsFromTable("users", "*", "email=? OR username=?", [$employee_email, $employee_username]))) {
+        if (count(fetchRowsFromTable("users", "*", "email=:0 OR username=:1", [$employee_email, $employee_username]))) {
             setFlashError("Employee already exists with these credentials!");
             redirect("add_employee.php");
         }
 
         $sql = "INSERT INTO users (full_name, email, username, password_hash, user_type) VALUES ('$employee_name', '$employee_email', '$employee_username', '$employee_password', 'employee')";
 
-        if ($conn->query($sql) === TRUE) {
+        if ($conn->query($sql) !== false) {
             setFlashSuccess("Employee added successfully!");
             redirect("employee_management.php");
         } else {
@@ -42,7 +42,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else {
         $employee_id = $_POST['employee_id'];
 
-        if (count(fetchRowsFromTable("users", "*", "user_id!=? AND (email=? OR username=?)", [$employee_id, $employee_email, $employee_username]))) {
+        if (count(fetchRowsFromTable("users", "*", "user_id!=:0 AND (email=:1 OR username=:2)", [$employee_id, $employee_email, $employee_username]))) {
             setFlashError("Another employee added already exists with these credentials!");
             redirect("add_employee.php?edit_employee=" . $employee_id);
         }
@@ -54,7 +54,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         " . ($_POST['employee_password'] ? ", password_hash='$employee_password'" : "") . "
         WHERE user_id='$employee_id'";
 
-        if ($conn->query($sql) === TRUE) {
+        if ($conn->query($sql) !== false) {
             setFlashSuccess("Employee updated successfully!");
             redirect("employee_management.php");
         } else {

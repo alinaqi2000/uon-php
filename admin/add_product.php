@@ -10,8 +10,8 @@ if (isset($_GET['edit_product'])) {
     $sql = "SELECT * FROM products WHERE product_id='$product_id' LIMIT 1";
     $result = $conn->query($sql);
 
-    if ($result->num_rows == 1) {
-        $product = $result->fetch_assoc();
+    if ($result->rowCount() == 1) {
+        $product = $result->fetch();
 
         $product_name = $product['name'];
         $product_description = $product['description'];
@@ -19,7 +19,7 @@ if (isset($_GET['edit_product'])) {
         $product_featured = $product['featured'];
         $product_manufacturer = $product['manufacturer'];
         $product_price = $product['price'];
-        $cats = fetchRowsFromTable("product_categories", "category_id", "product_id=?", [$product_id]);
+        $cats = fetchRowsFromTable("product_categories", "category_id", "product_id=:0", [$product_id]);
         $product_category = array_column($cats, "category_id");
     }
 }
@@ -37,8 +37,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($product_id == "") {
         $sql = "INSERT INTO products (name, description, detail, featured, manufacturer, price, user_id) VALUES ('$product_name', '$product_description', '$product_detail', '$product_featured', '$product_manufacturer', '$product_price', '$user_id')";
 
-        if ($conn->query($sql) === TRUE) {
-            addProductCategories($conn->insert_id, $product_categories);
+        if ($conn->query($sql) !== false) {
+            addProductCategories($conn->lastInsertId(), $product_categories);
 
             setFlashSuccess("Product added successfully!");
             redirect("product_management.php");
@@ -48,7 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else {
         $sql = "UPDATE products SET name='$product_name', description='$product_description', detail='$product_detail', featured='$product_featured', manufacturer='$product_manufacturer', price='$product_price' WHERE product_id='$product_id'";
 
-        if ($conn->query($sql) === TRUE) {
+        if ($conn->query($sql) !== false) {
             addProductCategories($product_id, $product_categories);
 
             setFlashSuccess("Product updated successfully!");

@@ -13,6 +13,7 @@ if (isset($_GET['question'])) {
     LEFT JOIN products AS p ON q.product_id = p.product_id 
     WHERE question_id='$question_id'
     LIMIT 1", true);
+    $product_id = $question['product_id'];
     if (empty($question)) {
         redirect("question_management.php");
     }
@@ -26,12 +27,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $question_answer = $_POST['question_answer'];
 
     if (empty($_POST['answer_id'])) {
-        $sql = "INSERT INTO answers (question_id, user_id, answer) VALUES ('$question_id', '$user_id','$question_answer')";
-        
-        
-        if ($conn->query($sql) === TRUE) {
+        $sql = "INSERT INTO answers (question_id, product_id, user_id, answer) VALUES ('$question_id', '$product_id', '$user_id', '$question_answer')";
+
+
+        if ($conn->query($sql) !== false) {
             $conn->query("UPDATE questions SET answered=1 WHERE question_id='$question_id'");
-           
+
             setFlashSuccess("Answer added successfully!");
             redirect("answer_question.php?question=" . $question_id);
         } else {
@@ -41,7 +42,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $answer_id = $_POST['answer_id'];
         $sql = "UPDATE answers SET answer='$question_answer' WHERE answer_id='$answer_id'";
 
-        if ($conn->query($sql) === TRUE) {
+        if ($conn->query($sql) !== false) {
             setFlashSuccess("Answer updated successfully!");
             redirect("answer_question.php?question=" . $question_id);
         } else {
@@ -80,7 +81,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         <div class="form-group">
             <label for="question_answer">Answer:</label>
-            <textarea class="form-control" id="question_answer" name="question_answer" rows="4"><?php echo $question_answer; ?></textarea>
+            <textarea class="form-control" id="question_answer" rows="6" name="question_answer" rows="4"><?php echo $question_answer; ?></textarea>
         </div>
 
         <button type="submit" class="btn btn-success" name="<?php echo empty($question_id) ? 'add_question' : 'update_question'; ?>">

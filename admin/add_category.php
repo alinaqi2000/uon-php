@@ -10,8 +10,8 @@ if (isset($_GET['edit_category'])) {
   $sql = "SELECT * FROM categories WHERE category_id='$category_id' LIMIT 1";
     $result = $conn->query($sql);
 
-    if ($result->num_rows == 1) {
-        $category = $result->fetch_assoc();
+    if ($result->rowCount() == 1) {
+        $category = $result->fetch();
         $category_id = $category['category_id'];
         $category_name = $category['category_name'];
     }
@@ -23,7 +23,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (empty($_POST['category_id'])) {
         $sql = "INSERT INTO categories (category_name) VALUES ('$category_name')";
 
-        if ($conn->query($sql) === TRUE) {
+        if ($conn->query($sql) !== false) {
             setFlashSuccess("Category added successfully!");
             redirect("category_management.php");
         } else {
@@ -33,7 +33,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $category_id = $_POST['category_id'];
         $sql = "UPDATE categories SET category_name='$category_name' WHERE category_id='$category_id'";
 
-        if ($conn->query($sql) === TRUE) {
+        if ($conn->query($sql) !== false) {
             setFlashSuccess("Category updated successfully!");
             redirect("category_management.php");
         } else {

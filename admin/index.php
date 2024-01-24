@@ -13,8 +13,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $sql = "SELECT * FROM users WHERE username = '$username' LIMIT 1";
     $result = $conn->query($sql);
 
-    if ($result->num_rows == 1) {
-        $user = $result->fetch_assoc();
+    if ($result->rowCount() == 1) {
+        $user = $result->fetch();
 
         if (password_verify($password, $user['password_hash'])) {
             $_SESSION['admin_logged_in'] = true;
