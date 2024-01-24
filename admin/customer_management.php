@@ -2,24 +2,28 @@
 $title = "Categories Management";
 include_once("./layout/header.php");
 
-if (isset($_GET['delete_category'])) {
-    $category_id = $_GET['delete_category'];
+if (isset($_GET['delete_customer'])) {
+    $customer_id = $_GET['delete_customer'];
 
-    $conn->query("DELETE FROM product_categories WHERE category_id='$category_id'");
-    $conn->query("DELETE FROM categories WHERE category_id='$category_id'");
+    try {
+        $conn->query("DELETE a FROM questions q
+    LEFT JOIN answers a ON q.question_id = a.question_id
+    WHERE q.customer_id='$customer_id'");
+        $conn->query("DELETE FROM questions WHERE customer_id='$customer_id'");
+    } catch (\Throwable $th) {
+        die($th->getMessage());
+    }
+    $conn->query("DELETE FROM customers WHERE customer_id='$customer_id'");
 
-    setFlashSuccess("Category deleted successfully!");
-    redirect("category_management.php");
+    setFlashSuccess("Customer deleted successfully!");
+    redirect("customer_management.php");
 }
-$categories = fetchRowsFromTable("categories");
+$customers = fetchRowsFromTable("customers");
 ?>
 <div class="container mt-4">
-    <h2>Category Management</h2>
+    <h2>Customer Management</h2>
 
     <div class="row">
-        <div class="col-md-12">
-            <a href="add_category.php" class="btn btn-success">Add Category</a>
-        </div>
         <div class="col-md-12 mt-2">
             <?php displayFlashMessages(); ?>
         </div>
@@ -36,22 +40,23 @@ $categories = fetchRowsFromTable("categories");
                     <tr>
                         <th width="5%">ID</th>
                         <th>Name</th>
+                        <th>Email</th>
                         <th width="15%">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if (!count($categories)) : ?>
+                    <?php if (!count($customers)) : ?>
                         <tr>
-                            <td colspan="3" class="text-center">No categories found.</td>
+                            <td colspan="3" class="text-center">No customers found.</td>
                         </tr>
                     <?php endif; ?>
-                    <?php foreach ($categories as $category) : ?>
+                    <?php foreach ($customers as $customer) : ?>
                         <tr>
-                            <td><?php echo $category['category_id']; ?></td>
-                            <td><?php echo $category['category_name']; ?></td>
+                            <td><?php echo $customer['customer_id']; ?></td>
+                            <td><?php echo $customer['customer_name']; ?></td>
+                            <td><?php echo $customer['customer_email']; ?></td>
                             <td>
-                                <a href="add_category.php?edit_category=<?= $category['category_id'] ?>" class="btn btn-sm btn-warning">Edit</a>
-                                <a href="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>?delete_category=<?= $category['category_id'] ?>" onclick="return confirm('Are you sure, you want to delete this category?')" class="btn btn-sm btn-danger">Delete</a>
+                                <a href="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>?delete_customer=<?= $customer['customer_id'] ?>" onclick="return confirm('Are you sure, you want to delete this customer?')" class="btn btn-sm btn-danger">Delete</a>
                             </td>
                         </tr>
                     <?php endforeach; ?>

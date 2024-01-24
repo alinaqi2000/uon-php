@@ -53,7 +53,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <input type="text" class="form-control" id="category_name" name="category_name" value="<?php echo $category_name; ?>" required>
         </div>
 
-        <button type="submit" class="btn btn-primary" name="<?php echo empty($category_id) ? 'add_category' : 'update_category'; ?>">
+        <button type="submit" class="btn btn-success" name="<?php echo empty($category_id) ? 'add_category' : 'update_category'; ?>">
             <?php echo empty($category_id) ? 'Add Category' : 'Update Category'; ?>
         </button>
     </form>

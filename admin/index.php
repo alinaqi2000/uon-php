@@ -1,33 +1,29 @@
 <?php
 include_once('./includes.php');
 
-// Example: Check if the user is already logged in
 if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
-    // Redirect to the admin dashboard or any other admin page
-    header("Location: dashboard.php");
+    redirect("dashboard.php");
     exit;
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Validate login credentials
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    // Example: Fetch user details from the database based on the username
-    $sql = "SELECT * FROM users WHERE username = '$username' AND user_type = 'admin' LIMIT 1";
+    $sql = "SELECT * FROM users WHERE username = '$username' LIMIT 1";
     $result = $conn->query($sql);
 
     if ($result->num_rows == 1) {
         $user = $result->fetch_assoc();
 
-        // Example: Verify password using password_verify
         if (password_verify($password, $user['password_hash'])) {
-            // Set session variables
             $_SESSION['admin_logged_in'] = true;
             $_SESSION['admin_username'] = $username;
+            $_SESSION['admin_name'] = $user['full_name'];
+            $_SESSION['admin_type'] = $user['user_type'];
+            $_SESSION['admin_id'] = $user['user_id'];
 
-            // Redirect to the admin dashboard or any other admin page
-            header("Location: index.php"); // Adjust the path as needed
+            redirect("index.php");
             exit;
         } else {
             $error_message = "Invalid password.";
@@ -45,8 +41,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Admin Login</title>
-
-    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css">
 </head>
 
@@ -55,7 +49,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <div class="row justify-content-center mt-5">
             <div class="col-md-6">
                 <div class="card">
-                    <div class="card-header">
+                    <div class="card-header bg-dark text-white">
                         <h3 class="text-center">Admin Login</h3>
                     </div>
                     <div class="card-body">
@@ -82,7 +76,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
     </div>
 
-    <!-- Bootstrap JS and dependencies -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"></script>

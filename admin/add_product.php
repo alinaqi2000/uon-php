@@ -33,8 +33,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $product_manufacturer = $_POST['product_manufacturer'];
     $product_price = $_POST['product_price'];
     $product_categories = $_POST['product_category'];
+    $user_id = $_SESSION['admin_id'];
     if ($product_id == "") {
-        $sql = "INSERT INTO products (name, description, detail, featured, manufacturer, price) VALUES ('$product_name', '$product_description', '$product_detail', '$product_featured', '$product_manufacturer', '$product_price')";
+        $sql = "INSERT INTO products (name, description, detail, featured, manufacturer, price, user_id) VALUES ('$product_name', '$product_description', '$product_detail', '$product_featured', '$product_manufacturer', '$product_price', '$user_id')";
 
         if ($conn->query($sql) === TRUE) {
             addProductCategories($conn->insert_id, $product_categories);
@@ -76,7 +77,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <textarea class="form-control" id="product_description" name="product_description" rows="4"><?php echo $product_description; ?></textarea>
         </div>
         <div class="form-group">
-            <label for="product_description">Product Detail:</label>
+            <label for="product_detail">Product Detail:</label>
             <textarea class="form-control" id="product_detail" name="product_detail" rows="4"><?php echo $product_detail; ?></textarea>
         </div>
 
@@ -115,7 +116,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
 
 
-        <button type="submit" class="btn btn-primary" name="<?php echo empty($product_id) ? 'add_product' : 'update_product'; ?>">
+        <button type="submit" class="btn btn-success" name="<?php echo empty($product_id) ? 'add_product' : 'update_product'; ?>">
             <?php echo empty($product_id) ? 'Add Product' : 'Update Product'; ?>
         </button>
     </form>

@@ -1,17 +1,19 @@
 -- Drop Existing Tables
-DROP TABLE IF EXISTS users;
+
+DROP TABLE IF EXISTS answers;
+
+DROP TABLE IF EXISTS questions;
+
+DROP TABLE IF EXISTS product_categories;
 
 DROP TABLE IF EXISTS products;
 
 DROP TABLE IF EXISTS categories;
 
-DROP TABLE IF EXISTS product_categories;
-
 DROP TABLE IF EXISTS customers;
 
-DROP TABLE IF EXISTS questions;
 
-DROP TABLE IF EXISTS answers;
+DROP TABLE IF EXISTS users;
 
 -- Create users Table
 CREATE TABLE users (

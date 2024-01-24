@@ -5,5 +5,5 @@ $_SESSION = array();
 
 session_destroy();
 
-header("Location: index.php"); // Adjust the path as needed
+header("Location: index.php");
 exit;
