@@ -40,11 +40,6 @@ $categories = fetchRowsFromTable("categories");
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if (!count($categories)) : ?>
-                        <tr>
-                            <td colspan="3" class="text-center">No categories found.</td>
-                        </tr>
-                    <?php endif; ?>
                     <?php foreach ($categories as $category) : ?>
                         <tr>
                             <td><?php echo $category['category_id']; ?></td>

@@ -54,6 +54,12 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
                             <?php endif; ?>
                         </a>
                     </li>
+                    <?php if ($_SESSION['admin_type'] == "admin") : ?>
+                        <li class="nav-item">
+                            <a class="nav-link" href="employee_management.php">Employees</a>
+                        </li>
+                    <?php endif; ?>
+
                     <li class="nav-item">
                         <a class="nav-link text-danger" href="logout.php">Logout</a>
                     </li>

@@ -42,11 +42,6 @@ $products = getAllProducts();
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if (!count($products)) : ?>
-                        <tr>
-                            <td colspan="3" class="text-center">No products found.</td>
-                        </tr>
-                    <?php endif; ?>
                     <?php foreach ($products as $product) : ?>
                         <tr>
                             <td><?php echo $product['product_id']; ?></td>

@@ -45,11 +45,6 @@ $customers = fetchRowsFromTable("customers");
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if (!count($customers)) : ?>
-                        <tr>
-                            <td colspan="3" class="text-center">No customers found.</td>
-                        </tr>
-                    <?php endif; ?>
                     <?php foreach ($customers as $customer) : ?>
                         <tr>
                             <td><?php echo $customer['customer_id']; ?></td>

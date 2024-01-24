@@ -40,11 +40,6 @@ $questions = getAllQuestions();
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if (!count($questions)) : ?>
-                        <tr>
-                            <td colspan="3" class="text-center">No questions found.</td>
-                        </tr>
-                    <?php endif; ?>
                     <?php foreach ($questions as $question) : ?>
                         <tr>
                             <td><?php echo $question['question_id']; ?></td>
