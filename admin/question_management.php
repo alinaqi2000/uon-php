@@ -11,7 +11,8 @@ if (isset($_GET['delete_question'])) {
     setFlashSuccess("Question deleted successfully!");
     redirect("question_management.php");
 }
-$questions = getAllQuestions();
+$onlyUnanswered = $_GET['onlyUnanswered'];
+$questions = getAllQuestions(-1, $onlyUnanswered);
 ?>
 <div class="container mt-4">
     <h2>Question Management</h2>
@@ -25,6 +26,10 @@ $questions = getAllQuestions();
     <div class="card mt-4">
         <div class="card-header bg-dark text-white">
             Questions List
+            <div class="custom-control custom-switch float-right">
+                <input type="checkbox" value="checked" class="custom-control-input" <?= $onlyUnanswered ? "checked" : "" ?> id="answerSwitch">
+                <label class="custom-control-label" for="answerSwitch">Only Unanswered</label>
+            </div>
         </div>
         <div class="card-body">
             <table class="table table-bordered table-responsive">
@@ -68,5 +73,12 @@ $questions = getAllQuestions();
     table.fnSort([
         [5, 'desc']
     ]);
+    $("#answerSwitch").on("change", function() {
+        if ($(this).is(":checked")) {
+            window.location = "?onlyUnanswered=1"
+        } else {
+            window.location = "?onlyUnanswered=0"
+        }
+    })
 </script>
 <?php include_once("./layout/footer.php"); ?>

@@ -47,13 +47,14 @@ function countUnAnswered()
     $result = fetchRaw("SELECT COUNT(*) AS ua_questions FROM questions WHERE answered='0'", true);
     return $result['ua_questions'];
 }
-function getAllQuestions($limit = -1)
+function getAllQuestions($limit = -1, $only_unanswered = false)
 {
     return fetchRaw("SELECT q.*, u.full_name, c.customer_name, p.name FROM questions AS q
     LEFT JOIN customers AS c ON q.customer_id = c.customer_id 
     LEFT JOIN products AS p ON q.product_id = p.product_id 
     LEFT JOIN answers AS a ON q.question_id = a.question_id
     LEFT JOIN users AS u ON a.user_id = u.user_id
+    " . ($only_unanswered ? "WHERE answered='0'" : "") . "
     ORDER BY q.answered ASC
     " . ($limit == -1 ? "" : " LIMIT 0, " . $limit));
 }
